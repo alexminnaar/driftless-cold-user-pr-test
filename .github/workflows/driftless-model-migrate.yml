@@ -31,7 +31,7 @@ jobs:
           command: migrate
           workflow: ${{ github.event.inputs.workflow }}
           to: ${{ github.event.inputs.to }}
-          args: "--strict-label-audit"
+          args: "--strict-label-audit --generator fixture"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
