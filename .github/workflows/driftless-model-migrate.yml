@@ -1,0 +1,47 @@
+name: driftless model migrate
+
+# Manually triggered migration: compare + repair + validate, then open a PR
+# (or an issue when blocked).
+on:
+  workflow_dispatch:
+    inputs:
+      workflow:
+        description: "Workflow name from driftless.yml"
+        required: true
+      to:
+        description: "Target model"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Attempt migration
+        id: migrate
+        continue-on-error: true
+        uses: driftless-dev/driftless@v0.3.4
+        with:
+          command: migrate
+          workflow: ${{ github.event.inputs.workflow }}
+          to: ${{ github.event.inputs.to }}
+          args: "--strict-label-audit"
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Open migration PR (or issue)
+        uses: driftless-dev/driftless@v0.3.4
+        with:
+          command: open-pr
+          workflow: ${{ github.event.inputs.workflow }}
+          args: "--create"
+
+      - name: Preserve blocked migration status
+        if: steps.migrate.outcome == 'failure'
+        run: exit 1

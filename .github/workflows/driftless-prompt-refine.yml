@@ -1,0 +1,46 @@
+name: driftless prompt refine (support_classifier)
+
+# Re-optimize the prompt when this workflow's eval dataset changes in git.
+# Model stays pinned; only editable files may change.
+on:
+  workflow_dispatch:
+    inputs:
+      workflow:
+        description: "Workflow name from driftless.yml"
+        required: false
+        default: "support_classifier"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  WORKFLOW: ${{ github.event.inputs.workflow || 'support_classifier' }}
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Refine prompt toward the updated dataset
+        id: refine
+        continue-on-error: true
+        uses: driftless-dev/driftless@v0.3.4
+        with:
+          command: refine
+          workflow: ${{ env.WORKFLOW }}
+          args: "--strict-label-audit"
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Open refine PR
+        uses: driftless-dev/driftless@v0.3.4
+        with:
+          command: open-pr
+          workflow: ${{ env.WORKFLOW }}
+          args: "--create"
+
+      - name: Preserve blocked refinement status
+        if: steps.refine.outcome == 'failure'
+        run: exit 1

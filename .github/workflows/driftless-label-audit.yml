@@ -1,0 +1,26 @@
+name: driftless label audit (support_classifier)
+
+# Fail CI when duplicate/near-duplicate inputs carry disagreeing gold labels.
+on:
+  pull_request:
+    paths:
+      - "evals/gold.jsonl"
+      - "evals/tickets.jsonl"
+  push:
+    branches: [main]
+    paths:
+      - "evals/gold.jsonl"
+      - "evals/tickets.jsonl"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Audit gold labels (support_classifier)
+        uses: driftless-dev/driftless@v0.3.4
+        with:
+          command: audit-labels
+          workflow: support_classifier
+          args: "--fail"
