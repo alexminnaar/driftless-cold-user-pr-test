@@ -1,0 +1,5 @@
+.driftless/
+evals/outputs.jsonl
+__pycache__/
+*.pyc
+.venv/
