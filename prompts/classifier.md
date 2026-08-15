@@ -1,4 +1,5 @@
 Classify each support ticket by its main customer intent.
 
-Return a short category label.
+Use exact labels only: billing, technical, account, shipping.
 
+Return one short category label and no extra text.
